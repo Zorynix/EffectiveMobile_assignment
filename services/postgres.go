@@ -17,7 +17,7 @@ import (
 type Database interface {
 	Ping(ctx context.Context) error
 
-	GetCars(w http.ResponseWriter, r *http.Request) (*models.Car, error)
+	GetCars(w http.ResponseWriter, r *http.Request) (*[]models.Car, error)
 	UpdateCar(w http.ResponseWriter, r *http.Request) (*models.Car, error)
 	AddCar(w http.ResponseWriter, r *http.Request) (*models.Car, error)
 	DeleteCar(w http.ResponseWriter, r *http.Request) (*models.Car, error)
@@ -48,7 +48,7 @@ func NewPostgreSQL(ctx context.Context) (Database, error) {
 
 	conn.Exec("SET search_path TO tz")
 
-	err = conn.AutoMigrate(&models.Car{}, models.Person{})
+	err = conn.AutoMigrate(&models.Car{}, &models.People{})
 	if err != nil {
 		return nil, err
 	}
