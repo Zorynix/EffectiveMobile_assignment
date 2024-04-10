@@ -1,0 +1,9 @@
+DROP TABLE IF EXISTS Cars;
+
+CREATE TABLE IF NOT EXISTS Cars (
+    ID INT PRIMARY KEY,
+    Make VARCHAR(255),
+    Model VARCHAR(255),
+    Year INT,
+    RegNums JSONB
+);
