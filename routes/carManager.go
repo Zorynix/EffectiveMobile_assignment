@@ -1,27 +1,34 @@
 package routes
 
 import (
-	"net/http"
-
+	"github.com/gofiber/fiber/v2"
 	"tz.com/m/views"
 )
 
-func (router *Router) GetCarsRoute(w http.ResponseWriter, r *http.Request) {
-	view := views.View{W: w, R: r, PG: router.PG}
-	view.GetCarsView()
+func (route *Route) GetCarsRoute() {
+	route.Group.Get("/car-get", func(c *fiber.Ctx) error {
+		view := views.View{Ctx: c, PG: route.PG}
+		return view.GetCarsView()
+	})
 }
 
-func (router *Router) UpdateCarRoute(w http.ResponseWriter, r *http.Request) {
-	view := views.View{W: w, R: r, PG: router.PG}
-	view.UpdateCarView()
+func (route *Route) UpdateCarRoute() {
+	route.Group.Get("/car-edit", func(c *fiber.Ctx) error {
+		view := views.View{Ctx: c, PG: route.PG}
+		return view.GetCarsView()
+	})
 }
 
-func (router *Router) AddCarRoute(w http.ResponseWriter, r *http.Request) {
-	view := views.View{W: w, R: r, PG: router.PG}
-	view.AddCarView()
+func (route *Route) AddCarRoute() {
+	route.Group.Get("/car-add", func(c *fiber.Ctx) error {
+		view := views.View{Ctx: c, PG: route.PG}
+		return view.GetCarsView()
+	})
 }
 
-func (router *Router) DeleteCarRoute(w http.ResponseWriter, r *http.Request) {
-	view := views.View{W: w, R: r, PG: router.PG}
-	view.DeleteCarView()
+func (route *Route) DeleteCarRoute() {
+	route.Group.Get("/car-delete", func(c *fiber.Ctx) error {
+		view := views.View{Ctx: c, PG: route.PG}
+		return view.GetCarsView()
+	})
 }
