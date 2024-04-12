@@ -3,14 +3,14 @@ DROP TABLE IF EXISTS People;
 DROP SCHEMA IF EXISTS tz CASCADE;
 CREATE SCHEMA IF NOT EXISTS tz;
 CREATE TABLE IF NOT EXISTS tz.cars (
-    RegNum VARCHAR(255) PRIMARY KEY,
+    Reg_num VARCHAR(255) PRIMARY KEY,
     Mark VARCHAR(255) NOT NULL,
     Model VARCHAR(255) NOT NULL,
     Year INT,
-    OwnerID INT,
+    Owner_ID INT,
     CONSTRAINT fk_owner
-        FOREIGN KEY(OwnerID) 
-        REFERENCES tz.people(ID)
+        FOREIGN KEY(Owner_ID) 
+        REFERENCES tz.peoples(ID)
         ON DELETE SET NULL
 );
 CREATE TABLE IF NOT EXISTS tz.peoples (

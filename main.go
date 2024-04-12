@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 
+	// _ "tz.com/m/docs"
 	"tz.com/m/routes"
 	"tz.com/m/utils"
 )
