@@ -37,10 +37,12 @@ require (
 	golang.org/x/tools v0.6.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gorm.io/gorm v1.25.7-0.20240204074919-46816ad31dde // indirect
+	mellium.im/sasl v0.3.1 // indirect
 )
 
 require (
 	filippo.io/edwards25519 v1.1.0 // indirect
+	github.com/go-pg/pg v8.0.7+incompatible
 	github.com/gofiber/fiber/v2 v2.52.4
 	github.com/joho/godotenv v1.5.1
 	github.com/rs/zerolog v1.32.0

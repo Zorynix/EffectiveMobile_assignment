@@ -1,0 +1,196 @@
+basePath: /v1
+definitions:
+  models.Car:
+    properties:
+      mark:
+        type: string
+      model:
+        type: string
+      owner:
+        $ref: '#/definitions/models.People'
+      regNum:
+        type: string
+      year:
+        type: integer
+    type: object
+  models.People:
+    properties:
+      id:
+        type: integer
+      name:
+        type: string
+      patronymic:
+        type: string
+      surname:
+        type: string
+    type: object
+host: localhost:8000
+info:
+  contact: {}
+  description: This API allows you to manage cars in a database.
+  title: Car Management API
+  version: "1.0"
+paths:
+  /car-add:
+    post:
+      consumes:
+      - application/json
+      description: Добавляет новый автомобиль в базу данных.
+      parameters:
+      - description: Список регистрационных номеров для добавления
+        in: body
+        name: regNums
+        required: true
+        schema:
+          items:
+            type: string
+          type: array
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.Car'
+        "400":
+          description: Ошибка при разборе тела запроса
+          schema:
+            type: string
+        "500":
+          description: Ошибка при добавлении автомобиля в базу данных
+          schema:
+            type: string
+      summary: Добавить новый автомобиль
+      tags:
+      - cars
+  /car-delete:
+    delete:
+      consumes:
+      - application/json
+      description: Удаляет автомобиль по его регистрационному номеру.
+      parameters:
+      - description: Регистрационный номер автомобиля для удаления
+        in: query
+        name: regNum
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "404":
+          description: Автомобиль не найден
+          schema:
+            type: string
+        "500":
+          description: Ошибка при удалении автомобиля
+          schema:
+            type: string
+      summary: Удалить автомобиль
+      tags:
+      - cars
+  /car-edit:
+    put:
+      consumes:
+      - application/json
+      description: Обновляет данные автомобиля по его регистрационному номеру.
+      parameters:
+      - description: Регистрационный номер автомобиля
+        in: query
+        name: regNum
+        required: true
+        type: string
+      - description: JSON объект с обновляемыми данными
+        in: body
+        name: body
+        required: true
+        schema:
+          additionalProperties: true
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Car'
+        "400":
+          description: Ошибка при разборе тела запроса
+          schema:
+            type: string
+        "404":
+          description: Автомобиль не найден
+          schema:
+            type: string
+        "500":
+          description: Ошибка при обновлении данных автомобиля
+          schema:
+            type: string
+      summary: Обновить информацию об автомобиле
+      tags:
+      - cars
+  /info:
+    get:
+      consumes:
+      - application/json
+      description: Возвращает список автомобилей с возможностью фильтрации по различным
+        параметрам.
+      parameters:
+      - description: Фильтр по регистрационному номеру
+        in: query
+        name: reg_num
+        type: string
+      - description: Фильтр по марке автомобиля
+        in: query
+        name: mark
+        type: string
+      - description: Фильтр по модели автомобиля
+        in: query
+        name: model
+        type: string
+      - description: Фильтр по году выпуска
+        in: query
+        name: year
+        type: integer
+      - description: Фильтр по имени владельца
+        in: query
+        name: owner_name
+        type: string
+      - description: Фильтр по фамилии владельца
+        in: query
+        name: owner_surname
+        type: string
+      - description: Фильтр по отчеству владельца
+        in: query
+        name: owner_patronymic
+        type: string
+      - description: Лимит количества возвращаемых автомобилей
+        in: query
+        name: limit
+        type: integer
+      - description: Смещение начала списка возвращаемых автомобилей
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.Car'
+            type: array
+        "500":
+          description: Ошибка сервера
+          schema:
+            type: string
+      summary: Получить список автомобилей
+      tags:
+      - cars
+swagger: "2.0"
+schemes:
+  - http

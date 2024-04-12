@@ -3,12 +3,12 @@ package services
 import (
 	"context"
 	"errors"
-	"net/http"
 	"os"
 
 	"tz.com/m/models"
 	"tz.com/m/utils"
 
+	"github.com/gofiber/fiber/v2"
 	"github.com/rs/zerolog/log"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -17,10 +17,10 @@ import (
 type Database interface {
 	Ping(ctx context.Context) error
 
-	GetCars(w http.ResponseWriter, r *http.Request) (*models.Car, error)
-	UpdateCar(w http.ResponseWriter, r *http.Request) (*models.Car, error)
-	AddCar(w http.ResponseWriter, r *http.Request) (*models.Car, error)
-	DeleteCar(w http.ResponseWriter, r *http.Request) (*models.Car, error)
+	GetCars(c *fiber.Ctx) (*[]models.Car, error)
+	UpdateCar(c *fiber.Ctx) (*models.Car, error)
+	AddCar(c *fiber.Ctx) (*models.Car, error)
+	DeleteCar(c *fiber.Ctx) (*models.Car, error)
 }
 
 type Postgresql struct {
@@ -48,7 +48,7 @@ func NewPostgreSQL(ctx context.Context) (Database, error) {
 
 	conn.Exec("SET search_path TO tz")
 
-	err = conn.AutoMigrate(&models.Car{}, models.Person{})
+	err = conn.AutoMigrate(&models.Car{}, &models.People{})
 	if err != nil {
 		return nil, err
 	}
