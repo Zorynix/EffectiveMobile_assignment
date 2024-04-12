@@ -15,6 +15,24 @@ import (
 	"tz.com/m/utils"
 )
 
+// GetCars godoc
+// @Summary Получить список автомобилей
+// @Description Возвращает список автомобилей с возможностью фильтрации по различным параметрам.
+// @Tags cars
+// @Accept json
+// @Produce json
+// @Param reg_num query string false "Фильтр по регистрационному номеру"
+// @Param mark query string false "Фильтр по марке автомобиля"
+// @Param model query string false "Фильтр по модели автомобиля"
+// @Param year query int false "Фильтр по году выпуска"
+// @Param owner_name query string false "Фильтр по имени владельца"
+// @Param owner_surname query string false "Фильтр по фамилии владельца"
+// @Param owner_patronymic query string false "Фильтр по отчеству владельца"
+// @Param limit query int false "Лимит количества возвращаемых автомобилей"
+// @Param offset query int false "Смещение начала списка возвращаемых автомобилей"
+// @Success 200 {object} []models.Car
+// @Failure 500 {object} string "Ошибка сервера"
+// @Router /info [get]
 func (PG *Postgresql) GetCars(c *fiber.Ctx) (*[]models.Car, error) {
 	log.Debug().Msg("Starting GetCars method")
 	log.Info().Msg("GetCars called")
@@ -52,6 +70,19 @@ func (PG *Postgresql) GetCars(c *fiber.Ctx) (*[]models.Car, error) {
 	return &cars, nil
 }
 
+// UpdateCar godoc
+// @Summary Обновить информацию об автомобиле
+// @Description Обновляет данные автомобиля по его регистрационному номеру.
+// @Tags cars
+// @Accept json
+// @Produce json
+// @Param regNum query string true "Регистрационный номер автомобиля"
+// @Param body body map[string]interface{} true "JSON объект с обновляемыми данными"
+// @Success 200 {object} models.Car
+// @Failure 400 {object} string "Ошибка при разборе тела запроса"
+// @Failure 404 {object} string "Автомобиль не найден"
+// @Failure 500 {object} string "Ошибка при обновлении данных автомобиля"
+// @Router /car-edit [put]
 func (PG *Postgresql) UpdateCar(c *fiber.Ctx) (*models.Car, error) {
 	log.Debug().Msg("Starting UpdateCar method")
 	log.Info().Msg("UpdateCar called")
@@ -121,6 +152,17 @@ func fetchCarInfo(regNum string) (*models.Car, error) {
 	return &car, nil
 }
 
+// AddCar godoc
+// @Summary Добавить новый автомобиль
+// @Description Добавляет новый автомобиль в базу данных.
+// @Tags cars
+// @Accept json
+// @Produce json
+// @Param regNums body []string true "Список регистрационных номеров для добавления"
+// @Success 201 {object} models.Car
+// @Failure 400 {object} string "Ошибка при разборе тела запроса"
+// @Failure 500 {object} string "Ошибка при добавлении автомобиля в базу данных"
+// @Router /car-add [post]
 func (PG *Postgresql) AddCar(c *fiber.Ctx) (*models.Car, error) {
 	log.Debug().Msg("Starting AddCar method")
 	log.Info().Msg("AddCar called")
@@ -156,6 +198,17 @@ func (PG *Postgresql) AddCar(c *fiber.Ctx) (*models.Car, error) {
 	return &car, errors.New("no cars were added")
 }
 
+// DeleteCar godoc
+// @Summary Удалить автомобиль
+// @Description Удаляет автомобиль по его регистрационному номеру.
+// @Tags cars
+// @Accept json
+// @Produce json
+// @Param regNum query string true "Регистрационный номер автомобиля для удаления"
+// @Success 200 {object} string Автомобиль успешно удален
+// @Failure 404 {object} string "Автомобиль не найден"
+// @Failure 500 {object} string "Ошибка при удалении автомобиля"
+// @Router /car-delete [delete]
 func (PG *Postgresql) DeleteCar(c *fiber.Ctx) (*models.Car, error) {
 	log.Debug().Msg("Starting DeleteCar method")
 	log.Info().Msg("DeleteCar called")
