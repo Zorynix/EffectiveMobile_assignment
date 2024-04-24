@@ -8,7 +8,6 @@ import (
 	"tz.com/m/models"
 	"tz.com/m/utils"
 
-	"github.com/gofiber/fiber/v2"
 	"github.com/rs/zerolog/log"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -17,10 +16,10 @@ import (
 type Database interface {
 	Ping(ctx context.Context) error
 
-	GetCars(c *fiber.Ctx) (*[]models.Car, error)
-	UpdateCar(c *fiber.Ctx) (*models.Car, error)
-	AddCar(c *fiber.Ctx) (*models.Car, error)
-	DeleteCar(c *fiber.Ctx) (*models.Car, error)
+	GetCars(filters map[string]string, limit int, offset int) (*[]models.Car, error)
+	UpdateCar(regNum string, updates map[string]interface{}) (*models.Car, error)
+	AddCar(regNums []string) (*[]models.Car, error)
+	DeleteCar(regNum string) (*models.Car, error)
 }
 
 type Postgresql struct {

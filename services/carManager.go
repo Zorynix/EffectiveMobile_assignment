@@ -6,10 +6,8 @@ import (
 	"fmt"
 	"net/http"
 	"os"
-	"strconv"
 	"time"
 
-	"github.com/gofiber/fiber/v2"
 	"github.com/rs/zerolog/log"
 	"tz.com/m/models"
 	"tz.com/m/utils"
@@ -33,7 +31,7 @@ import (
 // @Success 200 {object} []models.Car
 // @Failure 500 {object} string "Ошибка сервера"
 // @Router /info [get]
-func (PG *Postgresql) GetCars(c *fiber.Ctx) (*[]models.Car, error) {
+func (PG *Postgresql) GetCars(filters map[string]string, limit int, offset int) (*[]models.Car, error) {
 	log.Debug().Msg("Starting GetCars method")
 	log.Info().Msg("GetCars called")
 
@@ -41,29 +39,30 @@ func (PG *Postgresql) GetCars(c *fiber.Ctx) (*[]models.Car, error) {
 	query := PG.DB.Preload("Owner")
 	log.Debug().Msg("Preloaded Owner")
 
-	modelFilters := []string{"reg_num", "mark", "model", "year", "owner_name", "owner_surname", "owner_patronymic"}
-	for _, filter := range modelFilters {
-		if value := c.Query(filter); value != "" {
-			query = query.Where(filter+" = ?", value)
-			log.Debug().Str("filter", filter).Str("value", value).Msg("Applying filter")
+	for key, value := range filters {
+		if value != "" {
+			query = query.Where(fmt.Sprintf("%s = ?", key), value)
 		}
+		log.Debug().Str("filter", key).Str("value", value).Msg("Applying filter")
 	}
 
-	var limit, offset int
-	if v := c.Query("limit"); v != "" {
-		limit, _ = strconv.Atoi(v)
+	if limit > 0 {
 		query = query.Limit(limit)
 		log.Debug().Int("limit", limit).Msg("Setting limit")
 	}
-	if v := c.Query("offset"); v != "" {
-		offset, _ = strconv.Atoi(v)
+
+	if offset > 0 {
 		query = query.Offset(offset)
 		log.Debug().Int("offset", offset).Msg("Setting offset")
 	}
 
 	if err := query.Find(&cars).Error; err != nil {
 		log.Error().Err(err).Msg("Failed to fetch cars")
-		return nil, c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
+		return nil, err
+	}
+
+	if len(cars) == 0 {
+		return nil, nil
 	}
 
 	log.Info().Msg("Successfully fetched cars")
@@ -83,20 +82,12 @@ func (PG *Postgresql) GetCars(c *fiber.Ctx) (*[]models.Car, error) {
 // @Failure 404 {object} string "Автомобиль не найден"
 // @Failure 500 {object} string "Ошибка при обновлении данных автомобиля"
 // @Router /car-edit [put]
-func (PG *Postgresql) UpdateCar(c *fiber.Ctx) (*models.Car, error) {
+func (PG *Postgresql) UpdateCar(regNum string, updates map[string]interface{}) (*models.Car, error) {
 	log.Debug().Msg("Starting UpdateCar method")
 	log.Info().Msg("UpdateCar called")
 
 	var car models.Car
-	regNum := c.Query("regNum")
 	log.Debug().Str("regNum", regNum).Msg("Received regNum for updating")
-
-	var updates map[string]interface{}
-	if err := c.BodyParser(&updates); err != nil {
-		log.Error().Err(err).Msg("Failed to parse update body")
-		return nil, err
-	}
-	log.Debug().Interface("updates", updates).Msg("Parsed updates")
 
 	if result := PG.DB.Model(&car).Where("reg_num = ?", regNum).Updates(updates); result.Error != nil {
 		log.Error().Err(result.Error).Msg("Failed to update car")
@@ -163,23 +154,14 @@ func fetchCarInfo(regNum string) (*models.Car, error) {
 // @Failure 400 {object} string "Ошибка при разборе тела запроса"
 // @Failure 500 {object} string "Ошибка при добавлении автомобиля в базу данных"
 // @Router /car-add [post]
-func (PG *Postgresql) AddCar(c *fiber.Ctx) (*models.Car, error) {
+func (PG *Postgresql) AddCar(regNums []string) (*[]models.Car, error) {
 	log.Debug().Msg("Starting AddCar method")
 	log.Info().Msg("AddCar called")
 
-	var car models.Car
+	var cars []models.Car
 
-	var req struct {
-		RegNums []string `json:"regNums"`
-	}
+	for _, regNum := range regNums {
 
-	if err := c.BodyParser(&req); err != nil {
-		log.Error().Err(err).Msg("Failed to parse request body")
-		return nil, err
-	}
-	log.Debug().Interface("regNums", req.RegNums).Msg("Parsed registration numbers")
-
-	for _, regNum := range req.RegNums {
 		carInfo, err := fetchCarInfo(regNum)
 		if err != nil {
 			log.Error().Str("regNum", regNum).Err(err).Msg("Failed to fetch car info")
@@ -191,11 +173,15 @@ func (PG *Postgresql) AddCar(c *fiber.Ctx) (*models.Car, error) {
 			return nil, result.Error
 		}
 
-		return &car, c.JSON(&carInfo)
+		cars = append(cars, *carInfo)
+	}
+
+	if len(cars) == 0 {
+		return nil, errors.New("no cars were added")
 	}
 
 	log.Warn().Msg("No cars were added")
-	return &car, errors.New("no cars were added")
+	return &cars, errors.New("no cars were added")
 }
 
 // DeleteCar godoc
@@ -209,13 +195,12 @@ func (PG *Postgresql) AddCar(c *fiber.Ctx) (*models.Car, error) {
 // @Failure 404 {object} string "Автомобиль не найден"
 // @Failure 500 {object} string "Ошибка при удалении автомобиля"
 // @Router /car-delete [delete]
-func (PG *Postgresql) DeleteCar(c *fiber.Ctx) (*models.Car, error) {
+func (PG *Postgresql) DeleteCar(regNum string) (*models.Car, error) {
 	log.Debug().Msg("Starting DeleteCar method")
 	log.Info().Msg("DeleteCar called")
 
 	var car models.Car
 
-	regNum := c.Query("regNum")
 	log.Debug().Str("regNum", regNum).Msg("Received regNum for deletion")
 
 	if result := PG.DB.Where("reg_num = ?", regNum).Delete(&car); result.Error != nil {
