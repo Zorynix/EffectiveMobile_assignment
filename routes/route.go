@@ -4,7 +4,6 @@ import (
 	"context"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/rs/zerolog/log"
 
 	"tz.com/m/services"
@@ -32,12 +31,6 @@ func Routes(addr *string) {
 	}
 
 	router := fiber.New()
-	router.Use(cors.New(cors.Config{
-		AllowOrigins:     "*",
-		AllowMethods:     "GET,POST,PUT,DELETE",
-		AllowHeaders:     "Origin, Content-Type, Accept",
-		AllowCredentials: true,
-	}))
 
 	route := Router{Router: router, PG: postgres}
 
